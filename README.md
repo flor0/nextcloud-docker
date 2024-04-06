@@ -2,8 +2,15 @@
 
 Currently existing "all-in-one" Nextcloud solutions using Docker are either unoptimized or lack the ability to be configured. This setup is close to a Nextcloud baremetal installation. You can even migrate your existing baremetal install to this with only a few tweaks to the official [migration](https://docs.nextcloud.com/server/28/admin_manual/maintenance/migrating.html) documentation.
 
-## Install
+## Features
+- An optimized version of php-fpm as described in the official Nextcloud [documentation](https://docs.nextcloud.com/server/28/admin_manual/installation/php_configuration.html).
+- Redis preinstalled.
+- Nginx preinstalled and already configured for Nextcloud as described in the [documentation](https://docs.nextcloud.com/server/28/admin_manual/installation/nginx.html).
 
+
+## Install Guide
+
+This assumes you already know how to install Nextcloud on a baremetal server or are familiar with the [documentation](https://docs.nextcloud.com/server/28/admin_manual/installation/index.html).
 
 ### Directories and file permissions
 You need to create two directories. One where your Nextcloud webroot will be and another where you want the data to be. The location doesn't really matter. *In this example* we have both directories in **/your/nextcloud/root** bt you should choose your own. 
@@ -58,6 +65,9 @@ Edit `/your/nextcloud/root/nextcloud/config/config.php` and add the following op
     'timeout' => 0.0,
 ),
 ```
+
+### Editing nginx.conf
+You may also have to replace `example.com` with your own domain or multiple domains in the nginx.conf file.
 
 ### Enabling system cron (optional)
 Nextcloud must perform background tasks. The best way to do that is to use cron. However, on docker this is not easily doable. Here the host will perform the cronjobs required.
