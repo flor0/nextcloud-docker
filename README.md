@@ -148,4 +148,5 @@ Add this to your `/your/nextcloud/root/nextcloud/config/config.php`:
 </details>
 
 
-
+### Migrating from existing Nextcloud
+To migrate you follow the steps described in the official [docs](https://docs.nextcloud.com/server/28/admin_manual/maintenance/migrating.html). The only difference here is importing the database backup into MariaDB running in the Docker Container. The way I did it is I exposed a port to MariaDB in the docker compose file and I ran something like `mysql -h [localhost:PORT HERE] -u nextcloud -pPASSWORD HERE nextcloud < database.bak` to import the backed up database.
