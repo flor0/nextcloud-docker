@@ -1,6 +1,22 @@
-# Nextcloud Docker
+![logo](https://cdn.rawgit.com/nextcloud/docker/071b888f7f689caa62c1498b6c61cb3599bcea2b/logo.svg)
+# Nextcloud Dockerized
 
-Currently existing "all-in-one" Nextcloud solutions using Docker are either unoptimized or lack the ability to be configured. This setup is close to a Nextcloud baremetal installation. You can even migrate your existing baremetal install to this with only a few tweaks to the official [migration](https://docs.nextcloud.com/server/28/admin_manual/maintenance/migrating.html) documentation.
+Currently existing "all-in-one" Nextcloud solutions using Docker are either unoptimized or lack many configuration options for advanced setup scenarios. This setup is close to an  optimized Nextcloud baremetal installation but with each component being dockerized.
+
+With this project you **don't need to do manual configuration** such as
+- installing webserver, php, redis
+- installing php extensions
+- optimizing web server and php for performance and large filesizes
+
+You must still do:
+- download nextcloud
+- set permissions
+- set your domain names and passwords in the config files
+- (optional) add a cronjob on the host system 
+
+
+Disclaimer:
+This project is in no way associated with the official Nextcloud project. This project is maintained by me and is intended for expert use. If you want something simple to set up but with less configuration options consider the [Nextcloud All-In-One docker container](https://github.com/nextcloud/all-in-one#nextcloud-all-in-one). I do not take responsibility if you mess up your server, existing Nextcloud or lose your job because the Nextcloud calendar broke.
 
 ## Features
 - An optimized version of php-fpm as described in the official Nextcloud [documentation](https://docs.nextcloud.com/server/28/admin_manual/installation/php_configuration.html).
