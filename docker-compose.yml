@@ -44,7 +44,9 @@ services:
 
   redis-nextcloud:
     container_name: redis-nextcloud
-    image: redis:latest
+#    image: redis:latest
+# keydb is a fork and drop-in replacement for Redis
+    image: eqalpha/keydb
     restart: unless-stopped
     networks:
       - nextcloud
