@@ -152,12 +152,12 @@ networks:
     traefik:
         external: true
 ```
-Get the internal IP of your Traefik with `docker inspect traefik`.
+Get the internal IP address range of your Traefik network with `docker network inspect traefik`. For example this will give you a subnet like 192.168.173.0/20
 Add this to your `/your/nextcloud/root/nextcloud/config/config.php`:
 ```
 'trusted_proxies' => 
   array (
-    0 => 'INSERT TRAEFIK IP HERE',
+    0 => 'INSERT TRAEFIK IP SUBNET HERE for our example 192.168.173.0/20',
   ),
 ```
 
