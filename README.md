@@ -1,19 +1,141 @@
 # Nextcloud Docker
 
-To get things set up:
+Currently existing "all-in-one" Nextcloud solutions using Docker are either unoptimized or lack the ability to be configured. This setup is close to a Nextcloud baremetal installation. You can even migrate your existing baremetal install to this with only a few tweaks to the official [migration](https://docs.nextcloud.com/server/28/admin_manual/maintenance/migrating.html) documentation.
 
-- sudo chown -R www-data:www-data /your/nextcloud/webroot
-- sudo chown -R www-data:www-data /your/nextcloud/data
+## Install
 
-Environment variables:
-- DATA_DIR: Where your nextcloud data should be. The same as /your/nextcloud/data
-- NEXTCLOUD_DIR: Where your nextcloud webroot should be. The same as /your/nextcloud/webroot
+
+### Directories and file permissions
+You need to create two directories. One where your Nextcloud webroot will be and another where you want the data to be. The location doesn't really matter. *In this example* we have both directories in **/your/nextcloud/root** bt you should choose your own. 
+
+Next, download the latest archive containing Nextcloud from the official site [here](https://download.nextcloud.com/server/releases/latest.zip) and put it in `/your/nextcloud/root`.
+
+Unzip the archive with `unzip latest.zip`. This will create the directory `/your/nextcloud/root/nextcloud`.
+
+Create the directory where your Nextcloud data will be: `mkdir /your/nextcloud/root/data`
+
+Set the correct owner for both directories:
+
+`sudo chown -R www-data:www-data /your/nextcloud/root/nextcloud`
+
+`sudo chown -R www-data:www-data /your/nextcloud/root/data`
+
+
+
+### Setting up Docker Compose
+You must set some environment variables. Create a **.env** file in the root of the cloned repo.
+- DATA_DIR: Where your nextcloud data is. The same as /your/nextcloud/root/data
+- NEXTCLOUD_DIR: Where your nextcloud webroot is. The same as /your/nextcloud/root/nextcloud
 - MARIADB_ROOT_PASS and MARIADB_PASS: Password for your mariadb root user and the user called "nextcloud"
-- TRAEFIK_CUSTOM_MIDDLEWARES: (optional) add additional middlewares if you have any
-- DOMAIN: Set this to your domain like "\`example.com\`" or for more than one "\`example.com\`,\`another.com\`" **Don't forget the backticks**
+- TRAEFIK_CUSTOM_MIDDLEWARES: (optional) If you plan to use Traefik and want to add additional middlewares, if you have any
+- DOMAIN: Set this to your domain like **"\`example.com\`"** or for more than one **"\`example.com\`,\`another.com\`"** without the double quotes. **Don't forget the backticks!**
 
-For testing system cron run this yourself first:
-- docker exec -u www-data php-fpm-nextcloud php --define apc.enable_cli=1 /var/www/html/cron.php
-If it doesn't throw any errors, you're set. Add this to your crontab and forget it:
-- */5 * * * * docker exec -u www-data php-fpm-nextcloud php --define apc.enable_cli=1 /var/www/html/cron.php
-Make sure you enable system cron in your Nextcloud settings.
+### Building php-fpm
+Because the official php-fpm images don't have and php extensions installed, we must do it ourselves.
+Simply run this command from the root of the cloned repo:
+
+`docker compose build php-fpm-nextcloud`
+
+this will take a while.
+
+### Installing Nextcloud
+
+Run `docker compose up -d`. If something doesn't work try debugging it yourself of open an issue with the php-fpm and nginx logs attached.
+
+Install Nextcloud how you usually would through the web interface. Use the MariaDB database and fill in the passwords you chose earlier. The database host is **mariadb-nextcloud:3306**
+
+### Editing the Nextcloud config
+Edit `/your/nextcloud/root/nextcloud/config/config.php` and add the following optimizations:
+
+```
+'memcache.local' => '\\OC\\Memcache\\APCu',
+'maintenance_window_start' => 1,
+'filelocking.enabled' => true,
+'memcache.locking' => '\OC\Memcache\Redis',
+'redis' => array(
+    'host' => 'redis-nextcloud',
+    'port' => 6379,
+    'timeout' => 0.0,
+),
+```
+
+### Enabling system cron (optional)
+Nextcloud must perform background tasks. The best way to do that is to use cron. However, on docker this is not easily doable. Here the host will perform the cronjobs required.
+
+For testing if system cron works run this yourself first:
+
+`docker exec -u www-data php-fpm-nextcloud php --define apc.enable_cli=1 /var/www/html/cron.php`
+
+If it doesn't throw any errors, you're set. Add this to your crontab:
+
+`*/5 * * * * docker exec -u www-data php-fpm-nextcloud php --define apc.enable_cli=1 /var/www/html/cron.php`
+
+Make sure you enable system cron in your Nextcloud admin panel.
+
+### Adding Traefik (optional)
+<details>
+<summary>Instructions</summary>
+
+If you want to run Nextcloud behind a reverse proxy here's how to set it up with Traefik. This assumes you already have Traefik up and running and created a docker network for it called *traefik*.
+Add the environment variable as mentioned above. 
+
+*Replace* the entire nginx service with this in the docker-compose.yml and add the traefik network:
+```
+nginx:
+    container_name: nginx-nextcloud
+    image: nginx:latest
+    volumes:
+      - ${NEXTCLOUD_DIR}:/var/www/html
+      - ${DATA_DIR}:/data
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+
+      - "traefik.http.routers.nginx-http.rule=Host(${DOMAIN})"
+      - "traefik.http.routers.nginx-http.entrypoints=web"
+      - "traefik.http.routers.nginx-http.middlewares=nextcloud-https-redirect@docker,nc-header@docker,nextcloud_redirectregex@docker${TRAEFIK_CUSTOM_MIDDLEWARES}"
+
+      - "traefik.http.routers.nginx-https.rule=Host(${DOMAIN})"
+      - "traefik.http.routers.nginx-https.tls=true"
+      - "traefik.http.routers.nginx-https.tls.certresolver=myresolver"
+      - "traefik.http.routers.nginx-https.entrypoints=websecure"
+      - "traefik.http.routers.nginx-https.middlewares=nc-header@docker,nextcloud_redirectregex@docker${TRAEFIK_CUSTOM_MIDDLEWARES}"
+      - "traefik.http.middlewares.nc-header.headers.stsSeconds=15552001"
+
+      # MIDDLEWARES
+      - "traefik.http.middlewares.nextcloud_redirectregex.redirectregex.permanent=true"
+      - "traefik.http.middlewares.nextcloud_redirectregex.redirectregex.regex=https://(.*)/.well-known/(?:card|cal)dav"
+      - "traefik.http.middlewares.nextcloud_redirectregex.redirectregex.replacement=https://$${1}/remote.php/dav"
+
+      # HTTP->HTTPS redirect
+      - "traefik.http.middlewares.nextcloud-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.nextcloud-https-redirect.redirectscheme.permanent=true"
+      # Traefik service
+      - "traefik.http.routers.nginx-https.service=nextcloud-service"
+      - "traefik.http.services.nextcloud-service.loadbalancer.server.port=80"
+    networks:
+      - nextcloud
+      - traefik
+    depends_on:
+      - php-fpm-nextcloud
+      - redis-nextcloud
+      - mariadb-nextcloud
+
+networks:
+    traefik:
+        external: true
+```
+Get the internal IP of your Traefik with `docker inspect traefik`.
+Add this to your `/your/nextcloud/root/nextcloud/config/config.php`:
+```
+'trusted_proxies' => 
+  array (
+    0 => 'INSERT TRAEFIK IP HERE',
+  ),
+```
+
+</details>
+
+
+

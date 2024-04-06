@@ -4,39 +4,15 @@ services:
   nginx:
     container_name: nginx-nextcloud
     image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
     volumes:
       - ${NEXTCLOUD_DIR}:/var/www/html
       - ${DATA_DIR}:/data
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik"
-
-      - "traefik.http.routers.nginx-http.rule=Host(${DOMAIN})"
-      - "traefik.http.routers.nginx-http.entrypoints=web"
-      - "traefik.http.routers.nginx-http.middlewares=nextcloud-https-redirect@docker,nc-header@docker,nextcloud_redirectregex@docker${TRAEFIK_CUSTOM_MIDDLEWARES}"
-
-      - "traefik.http.routers.nginx-https.rule=Host(${DOMAIN})"
-      - "traefik.http.routers.nginx-https.tls=true"
-      - "traefik.http.routers.nginx-https.tls.certresolver=myresolver"
-      - "traefik.http.routers.nginx-https.entrypoints=websecure"
-      - "traefik.http.routers.nginx-https.middlewares=nc-header@docker,nextcloud_redirectregex@docker${TRAEFIK_CUSTOM_MIDDLEWARES}"
-      - "traefik.http.middlewares.nc-header.headers.stsSeconds=15552001"
-
-      # MIDDLEWARES
-      - "traefik.http.middlewares.nextcloud_redirectregex.redirectregex.permanent=true"
-      - "traefik.http.middlewares.nextcloud_redirectregex.redirectregex.regex=https://(.*)/.well-known/(?:card|cal)dav"
-      - "traefik.http.middlewares.nextcloud_redirectregex.redirectregex.replacement=https://$${1}/remote.php/dav"
-
-      # HTTP->HTTPS redirect
-      - "traefik.http.middlewares.nextcloud-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.nextcloud-https-redirect.redirectscheme.permanent=true"
-      # Traefik service
-      - "traefik.http.routers.nginx-https.service=nextcloud-service"
-      - "traefik.http.services.nextcloud-service.loadbalancer.server.port=80"
     networks:
       - nextcloud
-      - traefik
     depends_on:
       - php-fpm-nextcloud
       - redis-nextcloud
@@ -76,5 +52,3 @@ services:
 networks:
   nextcloud:
     driver: bridge
-  traefik:
-    external: true
