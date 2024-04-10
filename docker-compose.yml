@@ -3,14 +3,17 @@ services:
 
   nginx:
     container_name: nginx-nextcloud
-    image: nginx:latest
+    build: ./nginx
     ports:
       - 80:80
       - 443:443
     volumes:
       - ${NEXTCLOUD_DIR}:/var/www/html
       - ${DATA_DIR}:/data
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      - NEXTCLOUD_PHP_FPM_HOST=${NEXTCLOUD_PHP_FPM_HOST}
+      - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN}
+      - NEXTCLOUD_MAX_UPLOAD_SIZE=${NEXTCLOUD_MAX_UPLOAD_SIZE}
     networks:
       - nextcloud
     depends_on:
