@@ -61,6 +61,12 @@ Simply run this command from the root of the cloned repo:
 
 this will take a while.
 
+### Building nginx
+This will embed an optimized configuration for serving Nextcloud files and PHP-FPM resources. Run this
+command from the root of the cloned repo:
+
+`docker compose build nginx`
+
 ### Installing Nextcloud
 
 Run `docker compose up -d`. If something doesn't work try debugging it yourself of open an issue with the php-fpm and nginx logs attached.
@@ -81,9 +87,6 @@ Edit `/your/nextcloud/root/nextcloud/config/config.php` and add the following op
     'timeout' => 0.0,
 ),
 ```
-
-### Editing nginx.conf
-You may also have to replace `example.com` with your own domain or multiple domains in the nginx.conf file.
 
 ### Enabling system cron (optional)
 Nextcloud must perform background tasks. The best way to do that is to use cron. However, on docker this is not easily doable. Here the host will perform the cronjobs required.
