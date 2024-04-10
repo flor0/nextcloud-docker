@@ -2,7 +2,7 @@ events { worker_connections 1024; }
 http {
 
     upstream php-handler {
-        server php-fpm-nextcloud:9000;
+        server ${NEXTCLOUD_PHP_FPM_HOST};
         #server unix:/run/php/php8.2-fpm.sock;
     }
 
@@ -16,7 +16,7 @@ http {
         listen 80;
         listen [::]:80;
         # INFO: Set this to your domain
-        server_name example.com;
+        server_name ${NEXTCLOUD_DOMAIN};
 
         # Prevent nginx HTTP Server Detection
         server_tokens off;
@@ -34,7 +34,7 @@ http {
         add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload" always;
 
         # set max upload size and increase upload timeout:
-        client_max_body_size 512M;
+        client_max_body_size ${NEXTCLOUD_MAX_UPLOAD_SIZE};
         client_body_timeout 300s;
         fastcgi_buffers 64 4K;
 
