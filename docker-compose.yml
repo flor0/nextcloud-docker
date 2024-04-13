@@ -20,7 +20,10 @@ services:
 
   php-fpm-nextcloud:
     container_name: php-fpm-nextcloud
-    build: ./php-fpm
+    build:
+      context: ./php-fpm
+      tags:
+        - localhost/php-fpm-nextcloud:latest
     volumes:
       - ${NEXTCLOUD_DIR}:/var/www/html
       - ${DATA_DIR}:/data
@@ -50,6 +53,27 @@ services:
     restart: unless-stopped
     networks:
       - nextcloud
+
+  cron-nextcloud:
+    container_name: cron-nextcloud
+    image: localhost/php-fpm-nextcloud:latest
+    restart: unless-stopped
+    entrypoint:
+      - /bin/sh
+    command:
+      - bash
+      - -c
+      - "'while true; do php --define apc.enable_cli=1 /var/www/html/cron.php && sleep 300; done'"
+    networks:
+      - nextcloud
+    user: www-data
+    volumes:
+      - ${NEXTCLOUD_DIR}:/var/www/html
+      - ${DATA_DIR}:/data
+    depends_on:
+      - php-fpm-nextcloud
+      - redis-nextcloud
+      - mariadb-nextcloud
 
 networks:
   nextcloud:

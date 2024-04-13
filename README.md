@@ -12,7 +12,6 @@ You must still do:
 - download nextcloud
 - set permissions
 - set your domain names and passwords in the config files
-- (optional) add a cronjob on the host system 
 
 
 Disclaimer:
@@ -22,6 +21,7 @@ This project is in no way associated with the official Nextcloud project. This p
 - An optimized version of php-fpm as described in the official Nextcloud [documentation](https://docs.nextcloud.com/server/28/admin_manual/installation/php_configuration.html).
 - Redis preinstalled.
 - Nginx preinstalled and already configured for Nextcloud as described in the [documentation](https://docs.nextcloud.com/server/28/admin_manual/installation/nginx.html).
+- Nextcloud cron jobs pre configured
 
 
 ## Install Guide
@@ -85,16 +85,8 @@ Edit `/your/nextcloud/root/nextcloud/config/config.php` and add the following op
 ### Editing nginx.conf
 You may also have to replace `example.com` with your own domain or multiple domains in the nginx.conf file.
 
-### Enabling system cron (optional)
-Nextcloud must perform background tasks. The best way to do that is to use cron. However, on docker this is not easily doable. Here the host will perform the cronjobs required.
-
-For testing if system cron works run this yourself first:
-
-`docker exec -u www-data php-fpm-nextcloud php --define apc.enable_cli=1 /var/www/html/cron.php`
-
-If it doesn't throw any errors, you're set. Add this to your crontab:
-
-`*/5 * * * * docker exec -u www-data php-fpm-nextcloud php --define apc.enable_cli=1 /var/www/html/cron.php`
+### Enabling system cron
+Nextcloud must perform background tasks, which the compose file is configured to do automatically.
 
 Make sure you enable system cron in your Nextcloud admin panel.
 
