@@ -57,8 +57,9 @@ services:
   cron-nextcloud:
     container_name: cron-nextcloud
     image: localhost/php-fpm-nextcloud:latest
-    restart: no
-    entrypoint: /cron.sh
+    restart: unless-stopped
+    command: ["bash", "-c", "while true; do echo \"Running cron job\"; php /var/www/html/cron.php; sleep 300; done"]
+    user: www-data
     networks:
       - nextcloud
     volumes:
