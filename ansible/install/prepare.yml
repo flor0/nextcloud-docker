@@ -1,0 +1,35 @@
+---
+- name: Setting up directories in ~/nextcloud
+  hosts: nextcloud
+  become: yes
+  tasks:
+    - name: Ensure ~/nextcloud exists
+      ansible.builtin.file:
+        path: ~/nextcloud
+        state: directory
+        mode: '0755'
+    - name: Ensure ~/nextcloud/data exists
+      ansible.builtin.file:
+        path: ~/nextcloud/data
+        state: directory
+        mode: '0755'
+    - name: Downloading latest nextcloud archive
+      ansible.builtin.get_url:
+        url: https://download.nextcloud.com/server/releases/latest.zip
+        dest: ~/nextcloud/latest.zip
+    - name: Extracting nextcloud archive into ~/nextcloud/nextcloud
+      ansible.builtin.unarchive:
+        src: ~/nextcloud/latest.zip
+        dest: ~/nextcloud
+        remote_src: yes
+    - name: Set owner www-data:www-data for ~/nextcloud
+      ansible.builtin.file:
+        path: ~/nextcloud
+        owner: www-data
+        group: www-data
+        recurse: yes
+    - name: Delete ~/nextcloud/latest.zip
+      ansible.builtin.file:
+        path: ~/nextcloud/latest.zip
+        state: absent
+  
