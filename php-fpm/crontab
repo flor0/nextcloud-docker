@@ -1,0 +1,3 @@
+# This crontab runs the nextcloud system background job every 5 minutes
+
+*/5 * * * * sudo -u www-data php --define apc.enable_cli=1 /var/www/html/cron.php

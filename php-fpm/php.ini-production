@@ -1972,3 +1972,7 @@ opcache.save_comments=1
 
 ; List of headers files to preload, wildcard patterns allowed.
 ;ffi.preload=
+
+
+; Useful Nextcloud optimizations and additions
+apc.enable_cli=1

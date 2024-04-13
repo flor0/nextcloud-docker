@@ -47,8 +47,8 @@ services:
 
   redis-nextcloud:
     container_name: redis-nextcloud
-#    image: redis:latest
-# keydb is a fork and drop-in replacement for Redis
+#   image: redis:latest
+#   keydb is a fork and drop-in replacement for Redis
     image: eqalpha/keydb
     restart: unless-stopped
     networks:
@@ -57,16 +57,10 @@ services:
   cron-nextcloud:
     container_name: cron-nextcloud
     image: localhost/php-fpm-nextcloud:latest
-    restart: unless-stopped
-    entrypoint:
-      - /bin/sh
-    command:
-      - bash
-      - -c
-      - "'while true; do php --define apc.enable_cli=1 /var/www/html/cron.php && sleep 300; done'"
+    restart: no
+    entrypoint: /cron.sh
     networks:
       - nextcloud
-    user: www-data
     volumes:
       - ${NEXTCLOUD_DIR}:/var/www/html
       - ${DATA_DIR}:/data

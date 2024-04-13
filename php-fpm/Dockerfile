@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libldap2-dev \
     libsmbclient-dev \
     libcurl4-openssl-dev \
+    cron \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install the docker-php-extension-installer script
@@ -57,6 +58,12 @@ RUN install-php-extensions \
     sysvsem \
     opcache
 
+# Copy crontab for system cron
+COPY ./cron.sh /cron.sh
+RUN chmod 0755 /cron.sh
+COPY ./crontab /etc/cron.d/nextcloud
+RUN chmod 0644 /etc/cron.d/nextcloud
+RUN crontab /etc/cron.d/nextcloud
 
 # Copy optimized php.ini-development and production
 COPY ./php.ini-production /usr/local/etc/php/php.ini
@@ -68,4 +75,4 @@ WORKDIR /var/www/html
 # EXPOSE 9000
 
 # Start PHP-FPM
-CMD ["sh", "-c", "php-fpm"]
+CMD ["bash", "-c", "php-fpm"]
