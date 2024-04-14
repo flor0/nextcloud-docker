@@ -1,5 +1,5 @@
-# Use the PHP 8.2 FPM image as the base
-FROM php:8.2-fpm
+# Use the PHP 8.3 FPM image as the base
+FROM php:8.3-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install the docker-php-extension-installer script
-RUN curl -sSL https://github.com/mlocati/docker-php-extension-installer/releases/download/2.2.6/install-php-extensions -o /usr/local/bin/install-php-extensions \
+RUN curl -sSL https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions -o /usr/local/bin/install-php-extensions \
     && chmod +x /usr/local/bin/install-php-extensions
 
 # Install PHP extensions
@@ -53,7 +53,6 @@ RUN install-php-extensions \
     apcu \
     memcached \
     redis \
-    imagick \
     sysvsem \
     opcache
 
