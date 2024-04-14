@@ -55,16 +55,13 @@ RUN install-php-extensions \
     redis \
     sysvsem \
     opcache
+# Note: For php8.3 the imagick module is not available yet with the docker-php-extension-installer
 
-
-# Copy optimized php.ini-development and production
+# Copy optimized php.ini
 COPY ./php.ini-production /usr/local/etc/php/php.ini
 
 # Set the working directory
 WORKDIR /var/www/html
-
-# Expose port 9000 for PHP-FPM
-# EXPOSE 9000
 
 # Start PHP-FPM
 CMD ["bash", "-c", "php-fpm"]
