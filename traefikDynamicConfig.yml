@@ -1,0 +1,14 @@
+# This is an example how to configure traefik to redirect the webfinger and nodeinfo requests for nextcloud
+# Add something like this to your traefik dynamic configuration
+
+http:
+  middlewares:
+    nextcloud-webfinger:
+      replacepathregex:
+        regex: https://(.*)/.well-known/webfinger
+        replacement: https://$${1}/index.php/.well-known/webfinger
+
+    nextcloud-nodeinfo:
+      replacepathregex:
+        regex: https://(.*)/.well-known/nodeinfo
+        replacement: https://$${1}/index.php/.well-known/nodeinfo
