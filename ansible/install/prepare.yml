@@ -1,35 +1,48 @@
 ---
-- name: Setting up directories in ~/nextcloud
+- name: Setting up directories and downloading Nextcloud
   hosts: nextcloud
   become: yes
+
+  vars:
+    # Change these variables to your setup
+    # Make sure they are the same in install.yml
+    data_dir: ~/nextcloud/data
+    nextcloud_root: ~/nextcloud/ # This is the root directory of the nextcloud installation, like /var/www/html
+
   tasks:
-    - name: Ensure ~/nextcloud exists
+    - name: Ensure nextcloud_root exists
       ansible.builtin.file:
-        path: ~/nextcloud
+        path: {{ nextcloud_root }}
         state: directory
         mode: '0755'
-    - name: Ensure ~/nextcloud/data exists
+    - name: Ensure data_dir exists
       ansible.builtin.file:
-        path: ~/nextcloud/data
+        path: {{ data_dir }}
         state: directory
         mode: '0755'
     - name: Downloading latest nextcloud archive
       ansible.builtin.get_url:
         url: https://download.nextcloud.com/server/releases/latest.zip
-        dest: ~/nextcloud/latest.zip
-    - name: Extracting nextcloud archive into ~/nextcloud/nextcloud
+        dest: "{{ nextcloud_root }}/latest.zip"
+    - name: Extracting nextcloud archive into "{{ nextcloud_root }}/nextcloud"
       ansible.builtin.unarchive:
-        src: ~/nextcloud/latest.zip
-        dest: ~/nextcloud
+        src: {{ nextcloud_root }}/latest.zip
+        dest: {{ nextcloud_root }}
         remote_src: yes
-    - name: Set owner www-data:www-data for ~/nextcloud
+    - name: Set owner www-data:www-data for nextcloud_root
       ansible.builtin.file:
-        path: ~/nextcloud
+        path: {{ nextcloud_root }}
         owner: www-data
         group: www-data
         recurse: yes
-    - name: Delete ~/nextcloud/latest.zip
+    - name: Set owner www-data:www-data for data_dir
       ansible.builtin.file:
-        path: ~/nextcloud/latest.zip
+        path: {{ data_dir }}
+        owner: www-data
+        group: www-data
+        recurse: yes
+    - name: Delete {{ nextcloud_root }}/latest.zip
+      ansible.builtin.file:
+        path: {{ nextcloud_root }}/latest.zip
         state: absent
   

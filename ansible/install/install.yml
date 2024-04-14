@@ -1,7 +1,17 @@
 ---
-- name: Installing Nextcloud from Github with Docker
+- name: Installing Nextcloud from https://github.com/flor0/nextcloud-docker
   hosts: nextcloud
   become: yes
+
+  vars:
+    # Change these variables to your setup
+    # Make sure they are the same in prepare.yml
+    mariadb_pass: password123
+    mariadb_root_pass: password123
+    data_dir: ~/nextcloud/data
+    nextcloud_root: ~/nextcloud
+    docker_compose_dir: ~/docker/nextcloud
+
   tasks:
     - name: Ensure ~/docker/ exists
       ansible.builtin.file:
@@ -15,11 +25,11 @@
     - name: Configuring .env by writing to it
       ansible.builtin.copy:
         content: |
-          DATA_DIR=~/nextcloud/data
-          NEXTCLOUD_DIR=~/nextcloud/nextcloud
-          MARIADB_ROOT_PASS=ligmaballs
-          MARIADB_PASS=ligmaballs
-        dest: ~/docker/nextcloud/.env
+          DATA_DIR={{ data_dir }}
+          NEXTCLOUD_DIR={{ nextcloud_dir }}/nextcloud
+          MARIADB_ROOT_PASS={{ mariadb_root_pass }}
+          MARIADB_PASS={{ mariadb_pass }}
+        dest: "~{{ docker_compose_dir }}/.env"
     - name: Running docker-compose build php-fpm-nextcloud
       ansible.builtin.command:
         cmd: docker compose -f ~/docker/nextcloud/docker-compose.yml build php-fpm-nextcloud
