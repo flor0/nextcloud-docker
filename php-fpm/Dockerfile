@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libldap2-dev \
     libsmbclient-dev \
     libcurl4-openssl-dev \
+    imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install the docker-php-extension-installer script
@@ -54,8 +55,8 @@ RUN install-php-extensions \
     memcached \
     redis \
     sysvsem \
-    opcache
-# Note: For php8.3 the imagick module is not available yet with the docker-php-extension-installer
+    opcache \
+    imagick
 
 # Copy optimized php.ini
 COPY ./php.ini-production /usr/local/etc/php/php.ini
