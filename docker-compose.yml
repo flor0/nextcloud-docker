@@ -32,7 +32,7 @@ services:
 
   mariadb-nextcloud:
     container_name: mariadb-nextcloud
-    image: mariadb:10.6
+    image: mariadb:10.11
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     restart: always
     volumes:
